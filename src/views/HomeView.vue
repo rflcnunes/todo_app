@@ -1,67 +1,78 @@
 <template>
-  <main>
-    <input type="text" v-model="user.username" />
-    <input type="text" v-model="user.password" />
-    {{ tasks }}
-    {{ accessToken }}
-    <button @click="login">Login</button>
-    <button @click="getTasks">Get Env</button>
-  </main>
+  <div id="home_view">
+    <p class="font-sans">TODOS</p>
+    <ul id="tasks" class="divide-y divide-gray-200">
+      <li v-for="task in tasks" :key="task.id" class="py-4 flex">
+        <div class="flex-shrink-0">
+          <input
+            type="checkbox"
+            v-model="task.completed"
+            @change="updateStatus(task.id, task.completed)"
+            class="form-checkbox h-5 w-5 text-blue-600"
+          />
+        </div>
+        <div class="ml-3">
+          <p class="text-sm font-medium text-gray-900">{{ task.title }}</p>
+          <p class="text-sm text-gray-500">{{ task.description }}</p>
+          <p class="text-sm text-gray-500">{{ task.createdAt }}</p>
+        </div>
+      </li>
+    </ul>
+  </div>
 </template>
 
 <script>
-// import { useStore } from "vuex";
-import axios from "axios";
+import { useToast } from "vue-toastification";
 
 export default {
   name: "HomeView",
+  setup() {
+    const toast = useToast();
+    return { toast };
+  },
   data() {
     return {
-      tasks: [],
       user: {
         username: "",
         password: "",
       },
     };
   },
+  created() {
+    this.$store.dispatch("getTasks", this.accessToken);
+  },
   computed: {
-    getUrl() {
-      return import.meta.env.VITE_API_BASE_URL;
-    },
     accessToken() {
-      return this.$store.state.accessToken;
+      return this.$store.getters.getAccessToken;
+    },
+    tasks() {
+      return this.$store.getters.getTasksList;
     },
   },
   methods: {
-    login() {
-      axios
-        .post(`${this.getUrl}/auth/login`, {
-          username: this.user.username,
-          password: this.user.password,
-        })
-        .then((response) => {
-          console.log(response.data);
-          this.$store.commit("setAccessToken", response.data.access_token);
-        })
-        .catch((error) => {
-          console.log(error);
-        });
-    },
-    async getTasks() {
-      const url = import.meta.env.VITE_API_BASE_URL;
-      const response = await axios
-        .get(`${url}/tasks`, {
-          headers: {
-            Authorization: `Bearer ${this.accessToken}`,
-          },
-        })
-        .then((response) => {
-          console.log(response.data);
-          this.tasks = response.data;
-        });
+    updateStatus(id, completed) {
+      console.log(id, completed);
+      this.$store.dispatch("updateTaskStatus", {
+        id: id,
+        completed: completed,
+        accessToken: this.accessToken,
+      });
 
-      return response;
+      this.toast.success("Task status updated!");
     },
   },
 };
 </script>
+
+<style lang="scss" scoped>
+#home_view {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  #tasks {
+    width: 40%;
+  }
+}
+</style>

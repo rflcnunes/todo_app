@@ -63,6 +63,28 @@ const store = createStore({
         console.log(error);
       }
     },
+    async updateTaskStatus(context, payload) {
+      const url = import.meta.env.VITE_API_BASE_URL;
+      const apiUrl = `${url}/tasks/${payload.id}`;
+
+      const config = {
+        headers: {
+          Authorization: `Bearer ${payload.accessToken}`,
+        },
+      };
+
+      try {
+        await axios.put(
+          apiUrl,
+          {
+            completed: payload.completed,
+          },
+          config
+        );
+      } catch (error) {
+        console.log(error);
+      }
+    },
   },
 });
 
