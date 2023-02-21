@@ -1,7 +1,9 @@
 import { createStore } from "vuex";
+import { useToast } from "vue-toastification";
 import axios from "axios";
 import router from "./router";
 
+const toast = useToast();
 
 const store = createStore({
   state() {
@@ -52,6 +54,7 @@ const store = createStore({
           .catch((error) => {
             if (error.response.status === 401) {
               router.push({ path: "/login" });
+              toast.error("Your session has expired. Please login again.");
             }
           });
 
