@@ -125,7 +125,7 @@ const store = createStore({
         console.log(error);
       }
     },
-    async createTask(payload) {
+    async createTask(context, payload) {
       const url = import.meta.env.VITE_API_BASE_URL;
       const apiUrl = `${url}/users/${payload.userId}/tasks`;
 
