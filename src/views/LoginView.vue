@@ -142,6 +142,10 @@ export default {
         })
         .then((response) => {
           this.$store.commit("setAccessToken", response.data.access_token);
+          this.$store.commit("setUser", {
+            id: response.data.user.id,
+            username: response.data.user.username,
+          });
           router.push({ path: "/" });
         })
         .catch((error) => {

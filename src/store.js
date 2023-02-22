@@ -10,6 +10,10 @@ const store = createStore({
     return {
       tasks: [],
       accessToken: "",
+      user: {
+        id: null,
+        username: "",
+      },
     };
   },
   mutations: {
@@ -19,6 +23,12 @@ const store = createStore({
     setAccessToken(state, accessToken) {
       sessionStorage.setItem("accessToken", accessToken);
       state.accessToken = accessToken;
+    },
+    setUsername(state, username) {
+      state.user.username = username;
+    },
+    setUser(state, user) {
+      state.user = user;
     },
   },
   getters: {
@@ -35,6 +45,12 @@ const store = createStore({
     },
     getTasksList(state) {
       return state.tasks;
+    },
+    getUsername(state) {
+      return state.user.username;
+    },
+    getUser(state) {
+      return state.user;
     },
   },
   actions: {
@@ -84,6 +100,70 @@ const store = createStore({
       } catch (error) {
         console.log(error);
       }
+    },
+    async getUsername(context, accessToken) {
+      try {
+        const url = import.meta.env.VITE_API_BASE_URL;
+        const response = await axios
+          .get(`${url}/profile`, {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+          })
+          .then((response) => {
+            return response;
+          })
+          .catch((error) => {
+            if (error.response.status === 401) {
+              router.push({ path: "/login" });
+              toast.error("Your session has expired. Please login again.");
+            }
+          });
+
+        context.commit("setUsername", response.data.username);
+      } catch (error) {
+        console.log(error);
+      }
+    },
+    async createTask(payload) {
+      const url = import.meta.env.VITE_API_BASE_URL;
+      const apiUrl = `${url}/users/${payload.userId}/tasks`;
+
+      const config = {
+        headers: {
+          Authorization: `Bearer ${payload.accessToken}`,
+        },
+      };
+
+      const taskToCreate = {
+        title: payload.title,
+        description: payload.description,
+      };
+
+      try {
+        await axios.post(apiUrl, taskToCreate, config);
+      } catch (error) {
+        console.log(error);
+      }
+    },
+    async getUser(context, payload) {
+      const url = import.meta.env.VITE_API_BASE_URL;
+
+      await axios
+        .get(`${url}/auth/${payload.username}`, {
+          headers: {
+            Authorization: `Bearer ${payload.accessToken}`,
+          },
+        })
+        .then((response) => {
+          context.commit("setUser", response.data);
+        })
+        .catch((error) => {
+          if (error.response.status === 401) {
+            router.push({ path: "/login" });
+            toast.error("Your session has expired. Please login again.");
+          }
+        });
     },
   },
 });
