@@ -64,7 +64,6 @@ const store = createStore({
             },
           })
           .then((response) => {
-            console.log(response.data.data);
             return response.data.data;
           })
           .catch((error) => {
@@ -76,7 +75,7 @@ const store = createStore({
 
         context.commit("setTasks", response);
       } catch (error) {
-        console.log(error);
+        toast.error("Something went wrong. Please try again.");
       }
     },
     async updateTaskStatus(context, payload) {
@@ -98,7 +97,7 @@ const store = createStore({
           config
         );
       } catch (error) {
-        console.log(error);
+        toast.error("Something went wrong. Please try again.");
       }
     },
     async getUsername(context, accessToken) {
@@ -122,7 +121,7 @@ const store = createStore({
 
         context.commit("setUsername", response.data.username);
       } catch (error) {
-        console.log(error);
+        toast.error("Something went wrong. Please try again.");
       }
     },
     async createTask(context, payload) {
@@ -143,7 +142,7 @@ const store = createStore({
       try {
         await axios.post(apiUrl, taskToCreate, config);
       } catch (error) {
-        console.log(error);
+        toast.error("Something went wrong. Please try again.");
       }
     },
     async getUser(context, payload) {
@@ -165,6 +164,22 @@ const store = createStore({
           }
         });
     },
+    async deleteTask(context, payload) {
+      const url = import.meta.env.VITE_API_BASE_URL;
+      const apiUrl = `${url}/tasks/${payload.id}`;
+
+      const config = {
+        headers: {
+          Authorization: `Bearer ${payload.accessToken}`,
+        },
+      };
+
+      try {
+        await axios.delete(apiUrl, config);
+      } catch (error) {
+        toast.error("Something went wrong. Please try again.");
+      }
+    }
   },
 });
 
